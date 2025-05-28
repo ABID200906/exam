@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Riyu Exambro</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: sans-serif;
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .navbar {
+      width: 100%;
+      background-color: #1976D2;
+      color: white;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+    }
+    .navbar h1 {
+      font-size: 20px;
+      margin: 0;
+    }
+    .icons {
+      font-size: 22px;
+      display: flex;
+      gap: 15px;
+    }
+    .main {
+      margin-top: 80px;
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+    }
+    input[type="text"] {
+      width: 100%;
+      padding: 12px;
+      font-size: 16px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+    button {
+      width: 100%;
+      padding: 14px;
+      font-size: 16px;
+      margin-bottom: 15px;
+      background-color: #1976D2;
+      color: white;
+      border: none;
+      border-radius: 24px;
+      cursor: pointer;
+    }
+    button:active {
+      background-color: #125aa0;
+    }
+    /* Exam mode styles */
+    .exam-mode {
+      display: none;
+    }
+    .exam-navbar {
+      display: none;
+      width: 100%;
+      background-color: #1976D2;
+      color: white;
+      padding: 10px 20px;
+      position: fixed;
+      top: 0;
+      z-index: 1000;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .exam-menu {
+      position: relative;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      right: 0;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+      z-index: 1;
+      border-radius: 4px;
+    }
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+    }
+    .dropdown-content a:hover {
+      background-color: #f1f1f1;
+    }
+    .show {
+      display: block;
+    }
+    iframe {
+      width: 100%;
+      height: calc(100vh - 50px);
+      border: none;
+      margin-top: 50px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main screen -->
+  <div class="navbar">
+    <h1>Riyu Exambro</h1>
+    <div class="icons">
+      &#128439; &#x21ba; &#9432;
+    </div>
+  </div>
+
+  <div class="main">
+    <input type="text" id="urlInput" placeholder="Masukkan URL">
+    <button onclick="aksesUrl()">AKSES URL</button>
+    <button onclick="scanQR()">&#128439; SCAN QR-CODE</button>
+  </div>
+
+  <!-- Exam mode screen -->
+  <div class="exam-mode" id="examMode">
+    <div class="exam-navbar" id="examNavbar">
+      <h1 id="examTitle">Ujian</h1>
+      <div class="exam-menu">
+        <span class="icons" onclick="toggleMenu()">&#8942;</span>
+        <div class="dropdown-content" id="dropdownMenu">
+          <a href="#" onclick="openGoogle()">Buka Google</a>
+          <a href="#" onclick="exitFullscreen()">Keluar Fullscreen</a>
+          <a href="#" onclick="exitExamMode()">Keluar Ujian</a>
+        </div>
+      </div>
+    </div>
+    <iframe id="examFrame" allowfullscreen></iframe>
+  </div>
+
+  <script>
+    let isExamMode = false;
+    let currentUrl = '';
+    
+    function aksesUrl() {
+      const url = document.getElementById("urlInput").value;
+      if (url) {
+        currentUrl = url;
+        // Enter exam mode
+        enterExamMode(url);
+      } else {
+        alert("Masukkan URL terlebih dahulu!");
+      }
+    }
+
+    function scanQR() {
+      alert("Fitur scan QR belum diaktifkan.");
+      // Integrasi QR Scanner bisa ditambahkan jika pakai framework Android
+    }
+    
+    function enterExamMode(url) {
+      isExamMode = true;
+      document.querySelector('.main').style.display = 'none';
+      document.querySelector('.navbar').style.display = 'none';
+      
+      const examMode = document.getElementById('examMode');
+      const examNavbar = document.getElementById('examNavbar');
+      const examFrame = document.getElementById('examFrame');
+      
+      examMode.style.display = 'block';
+      examNavbar.style.display = 'flex';
+      examFrame.src = url;
+      
+      // Extract domain for title
+      try {
+        const domain = new URL(url).hostname.replace('www.', '');
+        document.getElementById('examTitle').textContent = domain;
+      } catch (e) {
+        console.error('Invalid URL', e);
+      }
+      
+      // Enter fullscreen
+      requestFullscreen();
+    }
+    
+    function exitExamMode() {
+      isExamMode = false;
+      document.querySelector('.main').style.display = 'block';
+      document.querySelector('.navbar').style.display = 'flex';
+      document.getElementById('examMode').style.display = 'none';
+      document.getElementById('examFrame').src = '';
+      exitFullscreen();
+    }
+    
+    function toggleMenu() {
+      document.getElementById('dropdownMenu').classList.toggle('show');
+    }
+    
+    function openGoogle() {
+      // Buka Google di tab baru
+      window.open('https://www.google.com', '_blank');
+      // Atau buka di iframe yang sama
+      // document.getElementById('examFrame').src = 'https://www.google.com';
+      // document.getElementById('examTitle').textContent = 'Google';
+      
+      // Tutup menu dropdown
+      document.getElementById('dropdownMenu').classList.remove('show');
+    }
+    
+    // Close dropdown when clicking outside
+    window.onclick = function(event) {
+      if (!event.target.matches('.icons')) {
+        const dropdowns = document.getElementsByClassName("dropdown-content");
+        for (let i = 0; i < dropdowns.length; i++) {
+          const openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
+          }
+        }
+      }
+    }
+    
+    // Fullscreen functions
+    function requestFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) { /* Safari */
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) { /* IE11 */
+        elem.msRequestFullscreen();
+      }
+    }
+    
+    function exitFullscreen() {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+      } else if (document.webkitExitFullscreen) { /* Safari */
+        document.webkitExitFullscreen();
+      } else if (document.msExitFullscreen) { /* IE11 */
+        document.msExitFullscreen();
+      }
+    }
+    
+    // Automatically enter fullscreen when in exam mode
+    document.addEventListener('fullscreenchange', () => {
+      if (!document.fullscreenElement && isExamMode) {
+        requestFullscreen();
+      }
+    });
+  </script>
+</body>
+</html>
